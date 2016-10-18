@@ -1,0 +1,614 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="python,browser,webdriver,mp4," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="最近为了获取某个网页的数据打算用python写一个爬虫脚本,由于网站本身为了其自身的隐蔽,对http请求做了一些比较复杂的验证处理。考虑到时间问题,最终放弃了直接通过http请求来获取页面，当然这部分还是花了一些时间研究,有一些突破积累了一些 经验，会在以后的日志中分享。
+最终我采用了开发速度最快,但执行效率相对低下的自动化测试库来抓取页面 Selenium 分享一下其用到的功能方法和技巧。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PyWebDriver">
+<meta property="og:url" content="https://lostgg.github.io/2016/10/18/PyWebDriver/index.html">
+<meta property="og:site_name" content="lostgg's blog">
+<meta property="og:description" content="最近为了获取某个网页的数据打算用python写一个爬虫脚本,由于网站本身为了其自身的隐蔽,对http请求做了一些比较复杂的验证处理。考虑到时间问题,最终放弃了直接通过http请求来获取页面，当然这部分还是花了一些时间研究,有一些突破积累了一些 经验，会在以后的日志中分享。
+最终我采用了开发速度最快,但执行效率相对低下的自动化测试库来抓取页面 Selenium 分享一下其用到的功能方法和技巧。">
+<meta property="og:updated_time" content="2016-10-18T05:36:40.578Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PyWebDriver">
+<meta name="twitter:description" content="最近为了获取某个网页的数据打算用python写一个爬虫脚本,由于网站本身为了其自身的隐蔽,对http请求做了一些比较复杂的验证处理。考虑到时间问题,最终放弃了直接通过http请求来获取页面，当然这部分还是花了一些时间研究,有一些突破积累了一些 经验，会在以后的日志中分享。
+最终我采用了开发速度最快,但执行效率相对低下的自动化测试库来抓取页面 Selenium 分享一下其用到的功能方法和技巧。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://lostgg.github.io/2016/10/18/PyWebDriver/"/>
+
+
+  <title> PyWebDriver | lostgg's blog </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lostgg's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                PyWebDriver
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-18T13:23:13+08:00" content="2016-10-18">
+              2016-10-18
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/python/" itemprop="url" rel="index">
+                    <span itemprop="name">python</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近为了获取某个网页的数据打算用python写一个爬虫脚本,由于网站本身为了其自身的隐蔽,对http请求做了一些比较复杂的验证处理。<br>考虑到时间问题,最终放弃了直接通过http请求来获取页面，当然这部分还是花了一些时间研究,有一些突破积累了一些 经验，会在以后<br>的日志中分享。</p>
+<p>最终我采用了开发速度最快,但执行效率相对低下的自动化测试库来抓取页面 <code>Selenium</code> 分享一下其用到的功能方法和技巧。</p>
+<a id="more"></a>
+<hr>
+<h1 id="WebDriver"><a href="#WebDriver" class="headerlink" title="WebDriver"></a>WebDriver</h1><h2 id="引入的库"><a href="#引入的库" class="headerlink" title="引入的库"></a>引入的库</h2><figure class="highlight py"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> selenium <span class="keyword">import</span> webdriver</div><div class="line"><span class="keyword">from</span> selenium.common.exceptions <span class="keyword">import</span> TimeoutException</div><div class="line"><span class="keyword">from</span> selenium.webdriver.support.ui <span class="keyword">import</span> WebDriverWait <span class="comment"># available since 2.4.0</span></div><div class="line"><span class="keyword">from</span> selenium.webdriver.support <span class="keyword">import</span> expected_conditions <span class="keyword">as</span> EC <span class="comment"># available since 2.26.0</span></div><div class="line"><span class="keyword">from</span> selenium.webdriver.common.by <span class="keyword">import</span> By</div><div class="line"><span class="keyword">import</span> time</div></pre></td></tr></table></figure>
+<h2 id="加载浏览器-打开页面"><a href="#加载浏览器-打开页面" class="headerlink" title="加载浏览器,打开页面"></a>加载浏览器,打开页面</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># chromedriver 是chrome浏览器执行自动化脚本的驱动程序，需要下载</span></div><div class="line"><span class="comment"># 此处构造一个浏览器访问对象</span></div><div class="line">driver = webdriver.Chrome(executable_path=<span class="string">'C:\\chromedriver.exe'</span>)</div><div class="line"><span class="comment"># 加载一个页面</span></div><div class="line">driver.get(<span class="string">'http://www.lostgg.com'</span>)</div></pre></td></tr></table></figure>
+<h2 id="获取元素"><a href="#获取元素" class="headerlink" title="获取元素"></a>获取元素</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 函数名后面加s获取元素集</span></div><div class="line"></div><div class="line"><span class="comment"># 通过class获取</span></div><div class="line">driver.find_element_by_calss_name(<span class="string">'class'</span>)</div><div class="line"><span class="comment"># 通过id获取</span></div><div class="line">driver.find_element_by_id(<span class="string">'id'</span>)</div><div class="line"><span class="comment"># 通过tag获取</span></div><div class="line">driver.find_element_by_tag(<span class="string">'input'</span>)</div><div class="line"><span class="comment"># 通过连接名获取</span></div><div class="line"><span class="comment"># &lt;a href="http://www.baidu.com"&gt;lostgg&lt;/a&gt;</span></div><div class="line">taga = driver.find_element(By.PARTIAL_LINK_TEXT, <span class="string">u'lostgg'</span>)</div><div class="line">tagas = driver.find_elements(By.PARTIAL_LINK_TEXT, <span class="string">u'lostgg'</span>)</div></pre></td></tr></table></figure>
+<h2 id="获取内容和写入数据"><a href="#获取内容和写入数据" class="headerlink" title="获取内容和写入数据"></a>获取内容和写入数据</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">user = driver.find_element_by_tag(<span class="string">'input'</span>)</div><div class="line"><span class="comment"># 获取</span></div><div class="line"><span class="keyword">print</span> <span class="string">'username:'</span>,user.text</div><div class="line"><span class="comment"># 写入</span></div><div class="line">user.send_keys(<span class="string">'lostgg'</span>)</div><div class="line"></div><div class="line"><span class="comment"># 提交登陆表单时,遇到一个账号可以正常写入,但密码无法写入的问题</span></div><div class="line"><span class="comment"># 原因是目标网站采用了两个重叠密码框,只有到第一个密码框标签激活以后,第二个密码框才会生效</span></div><div class="line"><span class="comment"># 而post真正获取的密码数据是第二个密码框的内容</span></div><div class="line"></div><div class="line"><span class="comment">#&lt;input class="pass1" &gt;</span></div><div class="line"><span class="comment">#&lt;input class="pass2" &gt;</span></div><div class="line"></div><div class="line"><span class="comment"># 激活输入框</span></div><div class="line">driver.find_element_by_class_name(<span class="string">'pass1'</span>).click()</div><div class="line"><span class="comment"># 发送密码</span></div><div class="line">driver.find_element_by_class_name(<span class="string">'pass2'</span>).send_keys(<span class="string">'mypass'</span>)</div></pre></td></tr></table></figure>
+<h2 id="按钮单击"><a href="#按钮单击" class="headerlink" title="按钮单击"></a>按钮单击</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">driver.find_element_by_id(<span class="string">'login'</span>).click()</div></pre></td></tr></table></figure>
+<h2 id="获取元素属性"><a href="#获取元素属性" class="headerlink" title="获取元素属性"></a>获取元素属性</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">taga = driver.find_element(By.PARTIAL_LINK_TEXT, <span class="string">u'lostgg'</span>)</div><div class="line">taga.get_attribute(<span class="string">'href'</span>)</div></pre></td></tr></table></figure>
+<h2 id="切换窗口"><a href="#切换窗口" class="headerlink" title="切换窗口"></a>切换窗口</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 有时候我们需要执行click操作一个A标签 而A标签属性 target='_blank'</span></div><div class="line"><span class="comment"># 这时浏览器把点击后的页面在新的tab中展示 driver中是无法直接获取到新页面元素的</span></div><div class="line"><span class="comment"># 所以我们需要切换窗口(tab)</span></div><div class="line"><span class="comment"># window_handles 是driver的窗口列表 最新打开的窗口在最低下所以索引为 -1</span></div><div class="line">driver.switch_to_window(driver.window_handles[<span class="number">-1</span>])</div><div class="line"><span class="comment"># 关闭窗口 close方法只是关闭当前switch的窗口</span></div><div class="line">driver.close()</div></pre></td></tr></table></figure>
+<h2 id="执行js代码"><a href="#执行js代码" class="headerlink" title="执行js代码"></a>执行js代码</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">driver.execute_script(<span class="string">"console.log('js code')"</span>)</div></pre></td></tr></table></figure>
+<h2 id="页面后退"><a href="#页面后退" class="headerlink" title="页面后退"></a>页面后退</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">driver.back()</div></pre></td></tr></table></figure>
+<h2 id="一个坑爹的问题"><a href="#一个坑爹的问题" class="headerlink" title="一个坑爹的问题"></a>一个坑爹的问题</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 有时候我们执行click操作以后打开一个新的页面,但无法预计新页面的加载时间</span></div><div class="line"><span class="comment"># 测试发现 webdriver 并不会等待click的页面完全加载以后再执行脚本,如果在click以后</span></div><div class="line"><span class="comment"># 没有sleep函数 新页面还未加载完毕，就开始查找新页面中的元素,将会抛出找不到元素的异常错误</span></div><div class="line"></div><div class="line"><span class="comment"># 如果有办法获取到a标签或者其他标签内的地址建议使用 driver.get('newurl') </span></div><div class="line"><span class="comment"># 重新加载新的页面 因为 get 好像会等待页面全部加载完毕</span></div><div class="line"></div><div class="line"><span class="comment"># exp</span></div><div class="line"></div><div class="line"><span class="comment"># --- error</span></div><div class="line">driver.find_element(By.PARTIAL_LINK_TEXT, <span class="string">u'baidu'</span>).click()</div><div class="line">dirver.find_element(By.PARTIAL_LINK_TEXT, <span class="string">u'newhref'</span>).click() <span class="comment"># 在click以后的新页面中查找元素</span></div><div class="line"></div><div class="line"><span class="comment"># 有时候我们会这样写</span></div><div class="line">driver.find_element(By.PARTIAL_LINK_TEXT, <span class="string">u'baidu'</span>).click()</div><div class="line">time.sleep(<span class="number">5</span>) <span class="comment"># 等待五秒以后再执行以下操作</span></div><div class="line">dirver.find_element(By.PARTIAL_LINK_TEXT, <span class="string">u'newhref'</span>).click() </div><div class="line"></div><div class="line"><span class="comment"># 我是这么写的</span></div><div class="line">driver.find_element(By.PARTIAL_LINK_TEXT, <span class="string">u'baidu'</span>).click()</div><div class="line"><span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">    <span class="keyword">try</span>：</div><div class="line">        dirver.find_element(By.PARTIAL_LINK_TEXT, <span class="string">u'newhref'</span>).click()</div><div class="line">        <span class="keyword">break</span></div><div class="line">    <span class="keyword">except</span>:</div><div class="line">        <span class="keyword">continue</span></div></pre></td></tr></table></figure>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag">#python</a>
+          
+            <a href="/tags/browser/" rel="tag">#browser</a>
+          
+            <a href="/tags/webdriver/" rel="tag">#webdriver</a>
+          
+            <a href="/tags/mp4/" rel="tag">#mp4</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/18/apache2-4-23-php7/" rel="next" title="CentOS6.5 Apache2.4.23 PHP7">
+                <i class="fa fa-chevron-left"></i> CentOS6.5 Apache2.4.23 PHP7
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://kaijun.rocks/hexo-theme-huxblog//img/avatar.jpg"
+               alt="lostgg" />
+          <p class="site-author-name" itemprop="name">lostgg</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/">
+              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#WebDriver"><span class="nav-number">1.</span> <span class="nav-text">WebDriver</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引入的库"><span class="nav-number">1.1.</span> <span class="nav-text">引入的库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#加载浏览器-打开页面"><span class="nav-number">1.2.</span> <span class="nav-text">加载浏览器,打开页面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#获取元素"><span class="nav-number">1.3.</span> <span class="nav-text">获取元素</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#获取内容和写入数据"><span class="nav-number">1.4.</span> <span class="nav-text">获取内容和写入数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#按钮单击"><span class="nav-number">1.5.</span> <span class="nav-text">按钮单击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#获取元素属性"><span class="nav-number">1.6.</span> <span class="nav-text">获取元素属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#切换窗口"><span class="nav-number">1.7.</span> <span class="nav-text">切换窗口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#执行js代码"><span class="nav-number">1.8.</span> <span class="nav-text">执行js代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#页面后退"><span class="nav-number">1.9.</span> <span class="nav-text">页面后退</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一个坑爹的问题"><span class="nav-number">1.10.</span> <span class="nav-text">一个坑爹的问题</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lostgg</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
